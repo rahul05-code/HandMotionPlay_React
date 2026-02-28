@@ -1,0 +1,31 @@
+/* =========================
+   DARK THEME (Default)
+========================= */
+
+body.dark {
+  --bg-main: #0b0f1a;
+  --card-bg: #111827;
+  --primary: #1e90ff;
+  --accent: #ff00cc;
+  --success: #00ff99;
+  --danger: #ff3b3b;
+  --text-main: #ffffff;
+  --text-muted: #9ca3af;
+  --border-color: #1f2937;
+}
+
+/* =========================
+   LIGHT THEME (Premium)
+========================= */
+
+body.light {
+  --bg-main: #f3f6fb;
+  --card-bg: #ffffff;
+  --primary: #2563eb;
+  --accent: #9333ea;
+  --success: #16a34a;
+  --danger: #dc2626;
+  --text-main: #111827;
+  --text-muted: #6b7280;
+  --border-color: #e5e7eb;
+}

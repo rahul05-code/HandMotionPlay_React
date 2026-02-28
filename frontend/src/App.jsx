@@ -1,13 +1,14 @@
-import React from 'react'
-import './App.css'
+import { ThemeProvider } from "./context/ThemeContext";
+import AppRoutes from "./routes/AppRoutes";
+import "./styles/variables.css";
+import "./styles/common.css";
 
 function App() {
-
   return (
-    <>
-      Hello Guys Lets Start With React !
-    </>
-  )
+    <ThemeProvider>
+      <AppRoutes />
+    </ThemeProvider>
+  );
 }
 
-export default App
+export default App;
