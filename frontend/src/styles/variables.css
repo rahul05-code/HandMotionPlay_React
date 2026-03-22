@@ -2,30 +2,50 @@
    DARK THEME (Default)
 ========================= */
 
-body.dark {
-  --bg-main: #0b0f1a;
-  --card-bg: #111827;
-  --primary: #1e90ff;
-  --accent: #ff00cc;
-  --success: #00ff99;
+:root[data-theme='dark'] {
+  --bg-main: #02040a; /* Very deep blue/black */
+  --bg-secondary: #0a0e17;
+  --card-bg: #0a0e17; /* Slight elevation */
+  --card-border: #1a2235;
+  
+  --primary: #0088ff; /* Vibrant blue */
+  --primary-hover: #0077e6;
+  --accent: #ff007f; /* Vibrant pink */
+  
+  --success: #00e676; /* Green indicator */
   --danger: #ff3b3b;
+  
   --text-main: #ffffff;
-  --text-muted: #9ca3af;
-  --border-color: #1f2937;
+  --text-muted: #8b949e;
+  
+  --border-color: #1a2235;
+  
+  --gradient-main: linear-gradient(135deg, var(--primary) 0%, #00bcff 100%);
+  --gradient-accent: linear-gradient(135deg, var(--accent) 0%, #ff5e00 100%);
 }
 
 /* =========================
-   LIGHT THEME (Premium)
+   LIGHT THEME 
 ========================= */
 
-body.light {
-  --bg-main: #f3f6fb;
+:root[data-theme='light'] {
+  --bg-main: #f8fafc;
+  --bg-secondary: #f1f5f9;
   --card-bg: #ffffff;
+  --card-border: #e2e8f0;
+  
   --primary: #2563eb;
-  --accent: #9333ea;
+  --primary-hover: #1d4ed8;
+  --accent: #db2777;
+  
   --success: #16a34a;
   --danger: #dc2626;
-  --text-main: #111827;
-  --text-muted: #6b7280;
-  --border-color: #e5e7eb;
+  
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  
+  --border-color: #e2e8f0;
+  
+  --gradient-main: linear-gradient(135deg, var(--primary) 0%, #3b82f6 100%);
+  --gradient-accent: linear-gradient(135deg, var(--accent) 0%, #f43f5e 100%);
 }
