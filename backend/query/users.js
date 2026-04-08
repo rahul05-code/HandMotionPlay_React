@@ -11,9 +11,9 @@ const getUsersQuery = (req, res) => {
 }
 
 const showUserQuery = (req, res) => {
-    const { id } = req.params;
+    const { email } = req.params;
 
-    pool.query('SELECT * FROM users WHERE id = $1', [id], (error, results) => {
+    pool.query('SELECT * FROM users WHERE email = $1', [email], (error, results) => {
         if (error) {
             res.status(500).json({ error: 'Database error' });
         } else if (results.rows.length === 0) {
@@ -25,16 +25,19 @@ const showUserQuery = (req, res) => {
 }
 
 const updateUserQuery = (req, res) => {
-    const userId = req.user.id; // From auth middleware
+    const email = req.user.email; // From auth middleware JWT payload
     const { name, age, gender, hand_type, therapy_type } = req.body;
 
+    // Convert age to integer or null if empty/not a number
+    const ageInt = age !== '' && age !== null && age !== undefined ? parseInt(age, 10) : null;
+
     pool.query(
-        'UPDATE users SET name = $1, age = $2, gender = $3, hand_type = $4, therapy_type = $5, updated_at = NOW() WHERE user_id = $6 RETURNING *',
-        [name, age, gender, hand_type, therapy_type, userId],
+        'UPDATE users SET name = $1, age = $2, gender = $3, hand_type = $4, therapy_type = $5, updated_at = NOW() WHERE email = $6 RETURNING *',
+        [name || null, ageInt, gender || null, hand_type || null, therapy_type || null, email],
         (error, results) => {
             if (error) {
-                console.error("Profile update error:", error);
-                res.status(500).json({ error: 'Database error while updating profile' });
+                console.error("Profile update SQL error:", error.message);
+                res.status(500).json({ error: 'Database error: ' + error.message });
             } else if (results.rows.length === 0) {
                 res.status(404).json({ error: 'User not found to update' });
             } else {

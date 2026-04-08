@@ -5,6 +5,7 @@ import { ArrowLeft, Clock, Target, Award, Hexagon, RefreshCw, ChevronRight, Load
 import { Link } from "react-router-dom";
 import { FilesetResolver, HandLandmarker } from "@mediapipe/tasks-vision";
 import { SHAPES } from "../../data/shapes";
+import axios from "axios";
 
 // Constants
 const PINCH_THRESHOLD = 0.05;
@@ -23,6 +24,7 @@ const ShapeTracing = () => {
     const [accuracy, setAccuracy] = useState(0);
     const [completed, setCompleted] = useState(0);
     const [elapsedTime, setElapsedTime] = useState(0);
+    const elapsedTimeRef = useRef(0);
     const [isShapeComplete, setIsShapeComplete] = useState(false);
 
     // Hot Refs
@@ -50,7 +52,10 @@ const ShapeTracing = () => {
         setElapsedTime(0);
         const interval = setInterval(() => {
             if (!isShapeCompleteRef.current) {
-                setElapsedTime(prev => prev + 1);
+                setElapsedTime(prev => {
+                    elapsedTimeRef.current = prev + 1;
+                    return prev + 1;
+                });
             }
         }, 1000);
         return () => clearInterval(interval);
@@ -155,6 +160,8 @@ const ShapeTracing = () => {
         totalPointsRef.current = 0;
         correctPointsRef.current = 0;
         setAccuracy(0);
+        setElapsedTime(0);
+        elapsedTimeRef.current = 0;
         setIsShapeComplete(false);
         isShapeCompleteRef.current = false;
 
@@ -300,6 +307,19 @@ const ShapeTracing = () => {
                                         setIsShapeComplete(true);
                                         isShapeCompleteRef.current = true;
                                         setCompleted(c => c + 1);
+
+                                        // Step-wise Tracking! Map completion to Backend Session
+                                        const token = localStorage.getItem('token');
+                                        if (token) {
+                                            axios.post('http://localhost:3000/game_sessions', {
+                                                gameName: 'Shape Tracing',
+                                                score: newAcc * 10,
+                                                accuracy: newAcc,
+                                                time_spent: elapsedTimeRef.current,
+                                                attempts: 1
+                                            }, { headers: { Authorization: `Bearer ${token}` } })
+                                            .catch(err => console.error("Tracking Error:", err));
+                                        }
                                     }
                                     lastCoverageCheckRef.current = now;
                                 }

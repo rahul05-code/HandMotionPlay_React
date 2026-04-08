@@ -10,6 +10,10 @@ const registerQuery = async (req, res) => {
         // Check if user already exists
         const existing = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
         if (existing.rows.length > 0) {
+            const user = existing.rows[0];
+            if (user.is_active === false) {
+                return res.status(403).json({ error: 'This email is associated with a deactivated account. Please contact admin.' });
+            }
             return res.status(400).json({ error: 'Email already registered' });
         }
 

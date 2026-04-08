@@ -4,6 +4,7 @@ import Button from "../../components/common/Button";
 import { ArrowLeft, Clock, Target, Trophy, Zap, RefreshCw, Loader2, Award } from "lucide-react";
 import { Link } from "react-router-dom";
 import { FilesetResolver, HandLandmarker } from "@mediapipe/tasks-vision";
+import axios from "axios";
 
 const TARGET_TYPES = [
     { type: 'normal', color: '#3b82f6', points: 10, radius: 25, speedMult: 1 },
@@ -45,6 +46,39 @@ const TargetGame = () => {
     const comboRef = useRef(0);
     const maxComboRef = useRef(0);
     const shotsRef = useRef(0);
+
+    // Final Stats Tracked for Session Closure
+    const finalStatsRef = useRef({ score: 0, accuracy: 0, elapsedTime: 0, shots: 0 });
+
+    useEffect(() => {
+        const acc = shots > 0 ? Math.round((hits / shots) * 100) : 0;
+        finalStatsRef.current = { score, accuracy: acc, elapsedTime, shots };
+    }, [score, hits, shots, elapsedTime]);
+
+    // Handle session end automatically
+    useEffect(() => {
+        return () => {
+            const token = localStorage.getItem('token');
+            const stats = finalStatsRef.current;
+            if (token && stats.elapsedTime > 5) {
+                fetch('http://localhost:3000/game_sessions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        gameName: 'Target Shooting',
+                        score: stats.score,
+                        accuracy: stats.accuracy,
+                        time_spent: stats.elapsedTime,
+                        attempts: stats.shots || 1
+                    }),
+                    keepalive: true
+                }).catch(err => console.error('Error logging session:', err));
+            }
+        };
+    }, []);
 
     // Hit fx
     const particlesRef = useRef([]);

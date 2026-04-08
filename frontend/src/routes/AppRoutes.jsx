@@ -1,11 +1,14 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import MainLayout from "../components/layout/MainLayout";
 import AdminLayout from "../components/layout/AdminLayout";
+import ProtectedRoute from "../components/ProtectedRoute";
 
 // Public Pages
 import Home from "../pages/public/Home";
 import Login from "../pages/public/Login";
 import Register from "../pages/public/Register";
+import AdminLogin from "../pages/public/AdminLogin";
+import AdminRegister from "../pages/public/AdminRegister";
 
 // User Pages
 import Profile from "../pages/user/Profile";
@@ -27,18 +30,20 @@ const AppRoutes = () => {
         <Route index element={<Home />} />
         <Route path="login" element={<Login />} />
         <Route path="register" element={<Register />} />
+        <Route path="admin/login" element={<AdminLogin />} />
+        <Route path="admin/register" element={<AdminRegister />} />
 
-        {/* User Routes (Can be protected later) */}
-        <Route path="profile" element={<Profile />} />
-        <Route path="games" element={<GameLibrary />} />
-        <Route path="games/canvas" element={<CanvasGame />} />
-        <Route path="games/target" element={<TargetGame />} />
-        <Route path="games/trace" element={<ShapeTracing />} />
-        <Route path="progress" element={<Progress />} />
+        {/* User Routes (Now Protected) */}
+        <Route path="profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+        <Route path="games" element={<ProtectedRoute><GameLibrary /></ProtectedRoute>} />
+        <Route path="games/canvas" element={<ProtectedRoute><CanvasGame /></ProtectedRoute>} />
+        <Route path="games/target" element={<ProtectedRoute><TargetGame /></ProtectedRoute>} />
+        <Route path="games/trace" element={<ProtectedRoute><ShapeTracing /></ProtectedRoute>} />
+        <Route path="progress" element={<ProtectedRoute><Progress /></ProtectedRoute>} />
         {/* Admin Routes (Nested under AdminLayout) */}
       </Route>
 
-      <Route path="/admin" element={<AdminLayout />}>
+      <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
         <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="users" element={<ManageUsers />} />

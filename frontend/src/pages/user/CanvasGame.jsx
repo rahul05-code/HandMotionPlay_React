@@ -4,6 +4,7 @@ import Button from "../../components/common/Button";
 import { ArrowLeft, Clock, Award, Minus, Plus, Eraser, Trash2, Download, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { FilesetResolver, HandLandmarker } from "@mediapipe/tasks-vision";
+import axios from "axios";
 
 const PINCH_THRESHOLD = 0.06;
 
@@ -47,6 +48,43 @@ const CanvasGame = () => {
   const [elapsedTime, setElapsedTime] = useState(0);
   const [strokes, setStrokes] = useState(0);
   
+  // Ref to hold final stats for unmount closure
+  const finalStatsRef = useRef({ strokes: 0, elapsedTime: 0 });
+
+  useEffect(() => {
+    finalStatsRef.current.strokes = strokes;
+    finalStatsRef.current.elapsedTime = elapsedTime;
+  }, [strokes, elapsedTime]);
+
+  // Handle Unmount Session Save
+  useEffect(() => {
+    return () => {
+      const token = localStorage.getItem('token');
+      const stats = finalStatsRef.current;
+      // Only log session if user stayed longer than 5 seconds
+      if (token && stats.elapsedTime > 5) {
+        const body = JSON.stringify({
+            gameName: 'Canvas Drawing',
+            score: stats.strokes * 10,
+            accuracy: 100, 
+            time_spent: stats.elapsedTime,
+            attempts: 1
+        });
+
+        // Use fetch with keepalive to ensure request completes after unmount
+        fetch('http://localhost:3000/game_sessions', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: body,
+          keepalive: true
+        }).catch(err => console.error("Session Save Error:", err));
+      }
+    };
+  }, []);
+  
   // Internal HOT Refs (prevents 60fps re-renders)
   const isDrawingRef = useRef(false);
   const lastXRef = useRef(null);
@@ -68,9 +106,10 @@ const CanvasGame = () => {
   useEffect(() => {
     let interval;
     if (isModelLoaded) {
-      setStartTime(Date.now()); // reset on load
+      const now = Date.now();
+      setStartTime(now); 
       interval = setInterval(() => {
-        setElapsedTime(Math.floor((Date.now() - startTime) / 1000));
+        setElapsedTime(Math.floor((Date.now() - now) / 1000));
       }, 1000);
     }
     return () => clearInterval(interval);
