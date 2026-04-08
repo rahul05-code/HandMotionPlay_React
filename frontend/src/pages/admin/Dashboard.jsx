@@ -1,17 +1,40 @@
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import AdminStatCard from "../../components/admin/AdminStatCard";
 import Card from "../../components/common/Card";
 import { ResponsiveContainer, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import { Users, UserCheck, Gamepad2, TrendingUp } from 'lucide-react';
 
-const userGrowthData = [
-  ...Array(7).fill(0).map((_, i) => ({
-    day: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][i],
-    activity: [3, 4, 2, 5, 3, 6, 4][i],
-    accuracy: [72, 75, 68, 82, 78, 85, 88][i]
-  }))
-];
-
 const AdminDashboard = () => {
+  const [data, setData] = useState({ summary: null, chartData: [] });
+
+  useEffect(() => {
+    const fetchAdminStats = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await axios.get('http://localhost:3000/admin/stats/dashboard', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setData(res.data);
+      } catch (err) {
+        console.error("Failed to fetch admin stats", err);
+      }
+    };
+    fetchAdminStats();
+  }, []);
+
+  const summary = data.summary || {
+    totalUsers: 0, activeUsers: 0, totalSessions: 0, avgSessionTime: '0 min', totalScore: 0
+  };
+  
+  const userGrowthData = data.chartData.length > 0 ? data.chartData : [
+    ...Array(7).fill(0).map((_, i) => ({
+      day: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][i],
+      activity: 0,
+      accuracy: 0
+    }))
+  ];
+
   return (
     <div className="page-container" style={{ paddingTop: '2rem' }}>
       <div style={{ marginBottom: '2rem' }}>
@@ -25,10 +48,10 @@ const AdminDashboard = () => {
         gap: "1.5rem",
         marginBottom: "2rem"
       }}>
-        <AdminStatCard title="Total Users" value="1,250" icon={<Users size={24} />} trend="12%" trendUp={true} />
-        <AdminStatCard title="Active User" value="820" icon={<UserCheck size={24} />} trend="8%" trendUp={true} />
-        <AdminStatCard title="Total Sessions" value="15,420" icon={<Gamepad2 size={24} />} trend="15%" trendUp={true} />
-        <AdminStatCard title="Avg Session Time" value="12.5 min" icon={<TrendingUp size={24} />} trend="2min" trendUp={true} />
+        <AdminStatCard title="Total Users" value={summary.totalUsers} icon={<Users size={24} />} trend="Global" trendUp={true} />
+        <AdminStatCard title="Active Users" value={summary.activeUsers} icon={<UserCheck size={24} />} trend="Current" trendUp={true} />
+        <AdminStatCard title="Total Sessions" value={summary.totalSessions} icon={<Gamepad2 size={24} />} trend="Played" trendUp={true} />
+        <AdminStatCard title="Avg Session Time" value={summary.avgSessionTime} icon={<TrendingUp size={24} />} trend="Duration" trendUp={true} />
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '2rem' }}>
@@ -84,12 +107,12 @@ const AdminDashboard = () => {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <div style={{ display: 'flex', gap: '8rem', color: 'var(--text-main)' }}>
             <div>
-              <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '0.25rem', fontWeight: '500' }}>Total Score</div>
-              <div style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>9.2M</div>
+              <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '0.25rem', fontWeight: '500' }}>Total Score Accumulated</div>
+              <div style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>{summary.totalScore}</div>
             </div>
             <div>
-              <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '0.25rem', fontWeight: '500' }}>Most Popular Game</div>
-              <div style={{ fontSize: '1.8rem', fontWeight: 'bold' }}>Canvas Drawing</div>
+              <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '0.25rem', fontWeight: '500' }}>Most Popular Platform</div>
+              <div style={{ fontSize: '1.8rem', fontWeight: 'bold' }}>HandMotionPlay</div>
             </div>
           </div>
           <div style={{ textAlign: 'right' }}>

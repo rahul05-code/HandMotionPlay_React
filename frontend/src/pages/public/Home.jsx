@@ -4,6 +4,7 @@ import { Play, Sparkles, Activity, Target, BrainCircuit, TrendingUp, ShieldCheck
 import Button from "../../components/common/Button";
 import GameCard from "../../components/user/GameCard";
 import { FilesetResolver, HandLandmarker } from "@mediapipe/tasks-vision";
+import axios from "axios";
 
 const Home = () => {
   const videoRef = useRef(null);
@@ -13,8 +14,28 @@ const Home = () => {
 
   const [isModelLoaded, setIsModelLoaded] = useState(false);
   const [hasCameraError, setHasCameraError] = useState(false);
+  const [userStats, setUserStats] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const lastTimeRef = useRef(-1);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      setIsLoggedIn(true);
+      const fetchStats = async () => {
+        try {
+          const res = await axios.get("http://localhost:3000/users/progress/stats", {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          setUserStats(res.data.stats);
+        } catch (error) {
+          console.error("Error fetching stats:", error);
+        }
+      };
+      fetchStats();
+    }
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -239,23 +260,23 @@ const Home = () => {
         }}>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <BrainCircuit color="var(--primary)" size={24} style={{ marginBottom: '0.5rem' }} />
-            <h2 style={{ marginBottom: '0.2rem' }}>10K+</h2>
-            <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Active Users</div>
+            <h2 style={{ marginBottom: '0.2rem' }}>{userStats ? userStats.total_games_played : "10K+"}</h2>
+            <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{isLoggedIn ? "Your Sessions" : "Active Users"}</div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <Target color="var(--primary)" size={24} style={{ marginBottom: '0.5rem' }} />
-            <h2 style={{ marginBottom: '0.2rem' }}>500K+</h2>
-            <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Games Played</div>
+            <h2 style={{ marginBottom: '0.2rem' }}>{userStats ? userStats.total_score : "500K+"}</h2>
+            <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{isLoggedIn ? "Total Score" : "Games Played"}</div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <TrendingUp color="var(--primary)" size={24} style={{ marginBottom: '0.5rem' }} />
-            <h2 style={{ marginBottom: '0.2rem' }}>94%</h2>
-            <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Improvement Rate</div>
+            <h2 style={{ marginBottom: '0.2rem' }}>{userStats ? parseFloat(userStats.average_accuracy).toFixed(1) + "%" : "94%"}</h2>
+            <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{isLoggedIn ? "Avg Accuracy" : "Improvement Rate"}</div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <Sparkles color="var(--primary)" size={24} style={{ marginBottom: '0.5rem' }} />
-            <h2 style={{ marginBottom: '0.2rem' }}>12+</h2>
-            <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Exercise Types</div>
+            <h2 style={{ marginBottom: '0.2rem' }}>{userStats ? Math.round(userStats.total_time_spent / 60) + "m" : "12+"}</h2>
+            <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{isLoggedIn ? "Time Spent" : "Exercise Types"}</div>
           </div>
         </div>
 
@@ -264,7 +285,7 @@ const Home = () => {
           width: '100%',
           maxWidth: '500px',
           height: '400px',
-          background: 'linear-gradient(180deg, rgba(10, 14, 23, 0) 0%, rgba(0, 136, 255, 0.05) 100%)',
+          background: 'linear-gradient(180deg, transparent 0%, rgba(0, 136, 255, 0.05) 100%)',
           border: '1px solid var(--card-border)',
           borderRadius: '24px',
           position: 'relative',
@@ -313,7 +334,7 @@ const Home = () => {
       {/* GAMES SECTION */}
       <section style={{
         padding: "4rem 2rem",
-        background: "rgba(10, 14, 23, 0.5)",
+        background: "var(--bg-secondary)",
         borderTop: "1px solid var(--card-border)",
         borderBottom: "1px solid var(--card-border)"
       }}>
@@ -512,7 +533,7 @@ const Home = () => {
       <section style={{ padding: "0 2rem 5rem 2rem" }}>
         <div className="page-container">
           <div style={{
-            background: "linear-gradient(180deg, rgba(0, 136, 255, 0.1) 0%, rgba(10, 14, 23, 1) 100%)",
+            background: "linear-gradient(180deg, rgba(0, 136, 255, 0.1) 0%, var(--bg-main) 100%)",
             border: "1px solid var(--card-border)",
             borderRadius: "24px",
             padding: "5rem 2rem",

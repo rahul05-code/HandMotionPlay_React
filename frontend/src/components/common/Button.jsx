@@ -1,9 +1,6 @@
-import React from "react";
-import "../../styles/common.css";
-
-const Button = ({ text, variant = "primary", onClick, type="button" }) => {
+const Button = ({ text, onClick, variant="primary" }) => {
   return (
-    <button className={`btn btn-${variant}`} onClick={onClick} type={type}>
+    <button className={`btn btn-${variant}`} onClick={onClick}>
       {text}
     </button>
   );

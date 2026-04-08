@@ -1,10 +1,10 @@
 const pool = require('../db/connection');
 
 const authUserQuery = (req, res) => {
-    // req.user is set by authMiddleware
-    const userId = req.user.id;
+    // req.user is set by authMiddleware (contains id & email from JWT)
+    const email = req.user.email;
 
-    pool.query('SELECT * FROM users WHERE user_id = $1', [userId], (error, results) => {
+    pool.query('SELECT * FROM users WHERE email = $1', [email], (error, results) => {
         if (error) {
             console.error(error);
             return res.status(500).json({ message: 'Database error' });

@@ -1,9 +1,10 @@
 import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Mail, EyeOff, ShieldCheck } from "lucide-react";
 import axios from "axios";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useAuth } from "../../context/AuthContext";
 
 export default function RegisterPage() {
     const [email, setEmail] = useState('');
@@ -11,6 +12,12 @@ export default function RegisterPage() {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+    const navigate = useNavigate();
+    const { token, login } = useAuth();
+
+    useEffect(() => {
+        if(token) navigate('/');
+    }, [token, navigate]);
 
     const registerHandler = async (e) => {
         e.preventDefault();
@@ -28,7 +35,14 @@ export default function RegisterPage() {
                 password
             });
             const res = req.data;
+            
+            login(res.user, res.token);
+            
             setSuccess('Registration successful !');
+            
+            setTimeout(() => {
+                navigate('/');
+            }, 1000);
         } catch (err) {
             setSuccess('');
             setError(err.response?.data?.message || 'Registration failed !');

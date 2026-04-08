@@ -2,8 +2,9 @@ import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
 import { Link, useNavigate } from "react-router-dom";
 import { Mail, EyeOff } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
+import { useAuth } from "../../context/AuthContext";
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -11,6 +12,11 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const navigate = useNavigate();
+  const { token, login } = useAuth();
+  
+  useEffect(() => {
+    if(token) navigate('/');
+  }, [token, navigate]);
 
   const loginHandler = async (e) => {
     e.preventDefault();
@@ -22,6 +28,9 @@ export default function LoginPage() {
         password
       });
       const res = req.data;
+      
+      login(res.user, res.token);
+      
       setSuccess('Login successful !');
       setTimeout(() => {
         navigate('/');

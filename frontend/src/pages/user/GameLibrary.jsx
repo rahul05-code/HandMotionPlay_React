@@ -1,7 +1,49 @@
+import React, { useState, useEffect } from "react";
 import GameCard from "../../components/user/GameCard";
 import { Sparkles, Activity, Target, Clock, Users } from "lucide-react";
+import axios from "axios";
 
 const GameLibrary = () => {
+  const [games, setGames] = useState([]);
+  const [userStats, setUserStats] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const fetchGames = async () => {
+      try {
+        const req = await axios.get("http://localhost:3000/games");
+        setGames(req.data);
+      } catch (error) {
+        console.error("Error fetching games", error);
+      }
+    };
+
+    const fetchUserStats = async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        setIsLoggedIn(true);
+        try {
+          const res = await axios.get("http://localhost:3000/users/progress/stats", {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          setUserStats(res.data.stats);
+        } catch (error) {
+          console.error("Error fetching stats:", error);
+        }
+      }
+    };
+
+    fetchGames();
+    fetchUserStats();
+  }, []);
+
+  const getIcon = (name) => {
+    const lowerName = name?.toLowerCase() || '';
+    if (lowerName.includes('canvas') || lowerName.includes('draw')) return <Sparkles size={24} color="var(--primary)" />;
+    if (lowerName.includes('shape') || lowerName.includes('trace')) return <Activity size={24} color="var(--accent)" />;
+    return <Target size={24} color="var(--success)" />;
+  };
+
   return (
     <>
       <div className="page-container" style={{ padding: "4rem 2rem" }}>
@@ -24,10 +66,10 @@ const GameLibrary = () => {
           marginBottom: "4rem"
         }}>
           {[
-            { value: '3', label: 'Total Games' },
-            { value: '3K+', label: 'Active Players' },
-            { value: '1.2K', label: 'Sessions Today' },
-            { value: '23%', label: 'Avg. Improvement' }
+            { value: games.length.toString(), label: 'Active Games' },
+            { value: userStats ? userStats.total_games_played.toString() : '3K+', label: isLoggedIn ? 'Your Sessions' : 'Active Players' },
+            { value: userStats ? userStats.total_score.toString() : '1.2K', label: isLoggedIn ? 'Total Score' : 'Sessions Today' },
+            { value: userStats ? parseFloat(userStats.average_accuracy).toFixed(1) + '%' : '23%', label: isLoggedIn ? 'Avg accuracy' : 'Avg. Improvement' }
           ].map((stat, idx) => (
             <div key={idx} style={{
               background: 'var(--card-bg)',
@@ -47,45 +89,28 @@ const GameLibrary = () => {
           gridTemplateColumns: "repeat(3, 1fr)",
           gap: "2rem"
         }}>
-          <GameCard
-            title="Canvas Drawing"
-            description="Draw in the air using your index finger. Express creativity while improving fine motor control."
-            icon={<Sparkles size={24} color="var(--primary)" />}
-            difficulty="Easy"
-            time="5-10 min"
-            playing="1K+ playing"
-            benefits={[
-              "Fine motor control",
-              "Hand-eye coordination",
-              "Creative expression"
-            ]}
-          />
-          <GameCard
-            title="Shape Tracing"
-            description="Follow the outline of various shapes to enhance precision and hand-eye coordination."
-            icon={<Activity size={24} color="var(--accent)" />}
-            difficulty="Medium"
-            time="3-5 min"
-            playing="850+ playing"
-            benefits={[
-              "Precision control",
-              "Pattern recognition",
-              "Steady hand movement"
-            ]}
-          />
-          <GameCard
-            title="Target Shooting"
-            description="Aim and shoot targets using finger gestures. Develop quick reflexes and accuracy."
-            icon={<Target size={24} color="var(--success)" />}
-            difficulty="Hard"
-            time="5-15 min"
-            playing="1.2K+ playing"
-            benefits={[
-              "Quick reflexes",
-              "Finger pointing accuracy",
-              "Hand speed"
-            ]}
-          />
+          {games.length === 0 ? (
+             <div style={{ gridColumn: 'span 3', textAlign: 'center', color: 'var(--text-muted)' }}>
+                No active games available at the moment.
+             </div>
+          ) : (
+            games.map(game => (
+              <GameCard
+                key={game.game_id}
+                title={game.game_name}
+                description={game.description}
+                icon={getIcon(game.game_name)}
+                difficulty={game.difficulty_level || 'Medium'}
+                time="5-10 min"
+                playing="Active playing"
+                benefits={game.benefits ? game.benefits.split(/,|\n/).map(b => b.trim()).filter(Boolean) : [
+                  "Hand motor control",
+                  "Coordination",
+                  "Focus"
+                ]}
+              />
+            ))
+          )}
         </div>
 
         <div style={{ marginTop: '5rem', textAlign: 'center' }}>

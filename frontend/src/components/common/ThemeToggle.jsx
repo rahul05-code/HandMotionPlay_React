@@ -1,17 +1,19 @@
 import { useContext } from "react";
 import { ThemeContext } from "../../context/ThemeContext";
-import "../../styles/common.css";
 
 const ThemeToggle = () => {
-  const { theme, toggleTheme } = useContext(ThemeContext);
+  const context = useContext(ThemeContext);
+
+  if (!context) {
+    console.error("ThemeContext is undefined. Wrap your app with ThemeProvider.");
+    return null;
+  }
+
+  const { theme, toggleTheme } = context;
 
   return (
-    <div className="toggle-wrapper" onClick={toggleTheme}>
-      <div className={`toggle-switch ${theme}`}>
-        <div className="toggle-circle">
-          {theme === "dark" ? "🌙" : "☀️"}
-        </div>
-      </div>
+    <div onClick={toggleTheme} style={{cursor:"pointer"}}>
+      {theme === "dark" ? "🌙" : "☀️"}
     </div>
   );
 };
