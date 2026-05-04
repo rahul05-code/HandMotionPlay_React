@@ -1,13 +1,11 @@
-import React from 'react'
-import './App.css'
+import AppRoutes from "./routes/AppRoutes";
+import "./styles/variables.css";
+import "./styles/common.css";
 
 function App() {
-
   return (
-    <>
-      Hello Guys Lets Start With React !
-    </>
-  )
+    <AppRoutes />
+  );
 }
 
-export default App
+export default App;
